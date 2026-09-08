@@ -1,0 +1,33 @@
+name: Feature request
+description: Propose a change that fits the SDD
+title: "feat: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        MVP scope is `docs/SDD.md` §50. Production deploy, billing, outbound email,
+        Evolution Manager, and an in-app guides portal are out of scope for v0.1.0.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What is hard or missing today?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: The smallest change that would help. Reference an SDD section if one exists.
+    validations:
+      required: true
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Scope
+      options:
+        - Fits current MVP (v0.1.0)
+        - Future enhancement (SDD §51)
+    validations:
+      required: true

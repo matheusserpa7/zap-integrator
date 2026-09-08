@@ -1,0 +1,19 @@
+{
+  "event": "MESSAGES_UPSERT",
+  "instance": "zap_ws_test_ins_test",
+  "data": {
+    "key": {
+      "remoteJid": "5511888888888@s.whatsapp.net",
+      "fromMe": false,
+      "id": "ABCD1234EFGH"
+    },
+    "pushName": "Fixture Contact",
+    "message": {
+      "conversation": "MESSAGE_BODY_MUST_NOT_BE_STORED"
+    },
+    "messageType": "conversation",
+    "messageTimestamp": 1757260800
+  },
+  "date_time": "2026-09-07T12:03:00.000Z",
+  "apikey": "EVO_APIKEY_MUST_NOT_BE_STORED"
+}

@@ -1,0 +1,239 @@
+services:
+    nginx:
+        image: nginx:1.28.0-alpine
+        depends_on:
+            app:
+                condition: service_started
+            reverb:
+                condition: service_started
+        ports:
+            - "8000:80"
+        volumes:
+            - .:/var/www/html
+            - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+        networks:
+            - zap
+        healthcheck:
+            test: ["CMD", "wget", "-qO-", "http://127.0.0.1/up"]
+            interval: 15s
+            timeout: 5s
+            retries: 8
+            start_period: 40s
+
+    app:
+        build:
+            context: .
+            dockerfile: Dockerfile
+            target: php-runtime
+        env_file:
+            - .env
+        environment:
+            DB_HOST: postgres
+            DB_PORT: 5432
+            REDIS_HOST: redis
+            REDIS_PORT: 6379
+        volumes:
+            - .:/var/www/html
+            - zap_media:/var/www/html/storage/app/media
+        depends_on:
+            postgres:
+                condition: service_healthy
+            redis:
+                condition: service_healthy
+        networks:
+            - zap
+        healthcheck:
+            test: ["CMD-SHELL", "php -r \"echo 'ok';\""]
+            interval: 15s
+            timeout: 5s
+            retries: 8
+            start_period: 45s
+
+    vite:
+        image: node:24.7.0-alpine3.21
+        working_dir: /var/www/html
+        command: sh -c "npm ci && npm run dev -- --host 0.0.0.0 --port 5173"
+        ports:
+            - "5173:5173"
+        volumes:
+            - .:/var/www/html
+        networks:
+            - zap
+
+    postgres:
+        image: postgres:18.6-alpine3.24
+        environment:
+            POSTGRES_DB: zap
+            POSTGRES_USER: zap
+            POSTGRES_PASSWORD: zap
+        volumes:
+            - zap_postgres:/var/lib/postgresql
+        networks:
+            - zap
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U zap -d zap"]
+            interval: 10s
+            timeout: 5s
+            retries: 10
+
+    redis:
+        image: redis:8.10.1-alpine3.23
+        command: ["redis-server", "--appendonly", "yes"]
+        volumes:
+            - zap_redis:/data
+        networks:
+            - zap
+        healthcheck:
+            test: ["CMD", "redis-cli", "ping"]
+            interval: 10s
+            timeout: 5s
+            retries: 10
+
+    horizon:
+        build:
+            context: .
+            dockerfile: Dockerfile
+            target: php-runtime
+        env_file:
+            - .env
+        environment:
+            DB_HOST: postgres
+            REDIS_HOST: redis
+        command: php artisan horizon
+        volumes:
+            - .:/var/www/html
+            - zap_media:/var/www/html/storage/app/media
+        depends_on:
+            app:
+                condition: service_started
+            redis:
+                condition: service_healthy
+        networks:
+            - zap
+
+    scheduler:
+        build:
+            context: .
+            dockerfile: Dockerfile
+            target: php-runtime
+        env_file:
+            - .env
+        environment:
+            DB_HOST: postgres
+            REDIS_HOST: redis
+        command: php artisan schedule:work
+        volumes:
+            - .:/var/www/html
+        depends_on:
+            app:
+                condition: service_started
+            postgres:
+                condition: service_healthy
+        networks:
+            - zap
+
+    reverb:
+        build:
+            context: .
+            dockerfile: Dockerfile
+            target: php-runtime
+        env_file:
+            - .env
+        environment:
+            DB_HOST: postgres
+            REDIS_HOST: redis
+            REVERB_SERVER_HOST: 0.0.0.0
+            REVERB_SERVER_PORT: 8080
+        command: php artisan reverb:start --host=0.0.0.0 --port=8080
+        volumes:
+            - .:/var/www/html
+        depends_on:
+            app:
+                condition: service_started
+            redis:
+                condition: service_healthy
+        networks:
+            - zap
+
+    evolution:
+        image: evoapicloud/evolution-api:v2.3.7
+        depends_on:
+            evolution-postgres:
+                condition: service_healthy
+            evolution-redis:
+                condition: service_healthy
+        ports:
+            - "127.0.0.1:8080:8080"
+        environment:
+            SERVER_URL: http://127.0.0.1:8080
+            SERVER_PORT: 8080
+            AUTHENTICATION_API_KEY: ${EVOLUTION_API_KEY:-changeme-evolution-api-key}
+            DATABASE_ENABLED: "true"
+            DATABASE_PROVIDER: postgresql
+            DATABASE_CONNECTION_URI: postgresql://evolution:evolution@evolution-postgres:5432/evolution?schema=public
+            DATABASE_SAVE_DATA_INSTANCE: "true"
+            DATABASE_SAVE_DATA_NEW_MESSAGE: "false"
+            DATABASE_SAVE_MESSAGE_UPDATE: "false"
+            DATABASE_SAVE_DATA_CONTACTS: "false"
+            DATABASE_SAVE_DATA_CHATS: "false"
+            DATABASE_SAVE_DATA_HISTORIC: "false"
+            DATABASE_SAVE_DATA_LABELS: "false"
+            CACHE_REDIS_ENABLED: "true"
+            CACHE_REDIS_URI: redis://evolution-redis:6379/0
+            REDIS_ENABLED: "true"
+            REDIS_URI: redis://evolution-redis:6379/1
+            WEBHOOK_GLOBAL_URL: http://nginx/internal/webhooks/evolution
+            WEBHOOK_GLOBAL_ENABLED: "false"
+            LANGUAGE: en
+            DEL_INSTANCE: "false"
+        volumes:
+            - evolution_instances:/evolution/instances
+        networks:
+            - zap
+        healthcheck:
+            test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080"]
+            interval: 20s
+            timeout: 5s
+            retries: 10
+            start_period: 40s
+
+    evolution-postgres:
+        image: postgres:18.6-alpine3.24
+        environment:
+            POSTGRES_DB: evolution
+            POSTGRES_USER: evolution
+            POSTGRES_PASSWORD: evolution
+        volumes:
+            - evolution_postgres:/var/lib/postgresql
+        networks:
+            - zap
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U evolution -d evolution"]
+            interval: 10s
+            timeout: 5s
+            retries: 10
+
+    evolution-redis:
+        image: redis:8.10.1-alpine3.23
+        command: ["redis-server", "--appendonly", "yes"]
+        volumes:
+            - evolution_redis:/data
+        networks:
+            - zap
+        healthcheck:
+            test: ["CMD", "redis-cli", "ping"]
+            interval: 10s
+            timeout: 5s
+            retries: 10
+
+networks:
+    zap:
+        driver: bridge
+
+volumes:
+    zap_postgres:
+    zap_redis:
+    zap_media:
+    evolution_postgres:
+    evolution_redis:
+    evolution_instances:

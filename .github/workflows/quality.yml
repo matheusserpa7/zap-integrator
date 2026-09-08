@@ -1,0 +1,101 @@
+name: Quality
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  php:
+    name: PHP quality
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18.6-alpine3.24
+        env:
+          POSTGRES_DB: zap
+          POSTGRES_USER: zap
+          POSTGRES_PASSWORD: zap
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U zap -d zap"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+      redis:
+        image: redis:8.10.1-alpine3.23
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      APP_ENV: testing
+      APP_KEY: base64:2fl+KTV4KMjxP3a4jXcB/j9zTNl/s5b0dYIFoNo3/4I=
+      DB_CONNECTION: pgsql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+      DB_DATABASE: zap
+      DB_USERNAME: zap
+      DB_PASSWORD: zap
+      REDIS_CLIENT: predis
+      REDIS_HOST: 127.0.0.1
+      REDIS_PORT: 6379
+      CACHE_STORE: redis
+      QUEUE_CONNECTION: redis
+      SESSION_DRIVER: array
+      BROADCAST_CONNECTION: null
+      MAIL_MAILER: array
+    steps:
+      - uses: actions/checkout@v5
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.5"
+          extensions: mbstring, pdo_pgsql, pcntl, posix, intl, zip, bcmath
+          coverage: none
+      - name: Validate composer
+        run: composer validate --strict
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+      - name: Pint
+        run: composer lint
+      - name: Larastan
+        run: composer analyse
+      - name: Migrate
+        run: php artisan migrate --force
+      - name: Pest
+        run: composer test
+      - name: Composer audit
+        run: composer audit
+      - name: OpenAPI
+        run: |
+          php artisan scramble:analyze
+          php artisan scramble:export --path=storage/app/openapi.json
+
+  frontend:
+    name: Frontend quality
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci
+      - run: npm audit --audit-level=high
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run test
+      - run: npm run build
+
+  docker:
+    name: Docker image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Build application image
+        run: docker build --target php-runtime -t zap:ci .

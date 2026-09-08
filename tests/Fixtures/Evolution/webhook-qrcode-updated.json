@@ -1,0 +1,17 @@
+{
+  "event": "QRCODE_UPDATED",
+  "instance": "zap_ws_test_ins_test",
+  "data": {
+    "qrcode": {
+      "instance": "zap_ws_test_ins_test",
+      "pairingCode": null,
+      "code": "2@QR_WEBHOOK_SECRET_DO_NOT_LOG",
+      "base64": "data:image/png;base64,QR_WEBHOOK_SECRET_DO_NOT_LOG"
+    }
+  },
+  "destination": "http://zap.test/internal/webhooks/evolution/ins_test",
+  "date_time": "2026-09-07T12:00:00.000Z",
+  "sender": "evolution",
+  "server_url": "http://evolution.test",
+  "apikey": "EVO_APIKEY_MUST_NOT_BE_STORED"
+}

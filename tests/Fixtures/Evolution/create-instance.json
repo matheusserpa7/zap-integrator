@@ -1,0 +1,10 @@
+{
+    "instance": {
+        "instanceName": "zap_ws_test_ins_test",
+        "instanceId": "abc123",
+        "status": "created"
+    },
+    "hash": {
+        "apikey": "evo_instance_token_secret"
+    }
+}

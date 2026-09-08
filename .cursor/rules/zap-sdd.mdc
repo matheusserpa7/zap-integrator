@@ -1,0 +1,17 @@
+---
+description: ZAP spec-driven implementation rules. Apply when writing or changing application code, tests, Docker, or CI.
+alwaysApply: true
+---
+
+# ZAP SDD execution
+
+ZAP is implemented from `specs/`, not from memory.
+
+1. Read `specs/constitution.md` before coding.
+2. Implement **only** the prompt the user pasted or named (`specs/prompts/00` … `07`).
+3. Functional source of truth: `docs/SDD.md` (root pointer: `ZAP_SDD.md`). Visual source of truth: `preview (6).html`.
+4. On conflict: SDD wins on behavior and scope; mockup wins on layout and pt-BR copy within MVP.
+5. After work, tick the matching IDs in `specs/tasks.md`.
+6. Do not start the next milestone. Do not add billing, email, production deploy, Evolution Manager, or Pinia.
+7. UI copy in Portuguese (pt-BR). Code, comments, commits, and technical docs in English.
+8. Do not commit unless the user asks.

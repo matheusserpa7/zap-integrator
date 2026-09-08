@@ -1,0 +1,13 @@
+{
+  "event": "CONNECTION_UPDATE",
+  "instance": "zap_ws_test_ins_test",
+  "data": {
+    "instance": "zap_ws_test_ins_test",
+    "state": "close",
+    "statusReason": 401
+  },
+  "destination": "http://zap.test/internal/webhooks/evolution/ins_test",
+  "date_time": "2026-09-07T12:02:00.000Z",
+  "sender": "evolution",
+  "server_url": "http://evolution.test"
+}

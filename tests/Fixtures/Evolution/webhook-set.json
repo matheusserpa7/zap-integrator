@@ -1,0 +1,6 @@
+{
+    "webhook": {
+        "enabled": true,
+        "url": "http://zap.test/internal/webhooks/evolution/ins_test"
+    }
+}

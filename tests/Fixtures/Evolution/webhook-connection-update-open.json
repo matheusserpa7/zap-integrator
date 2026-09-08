@@ -1,0 +1,15 @@
+{
+  "event": "CONNECTION_UPDATE",
+  "instance": "zap_ws_test_ins_test",
+  "data": {
+    "instance": "zap_ws_test_ins_test",
+    "state": "open",
+    "statusReason": 200,
+    "wuid": "5511999999999@s.whatsapp.net"
+  },
+  "destination": "http://zap.test/internal/webhooks/evolution/ins_test",
+  "date_time": "2026-09-07T12:01:00.000Z",
+  "sender": "evolution",
+  "server_url": "http://evolution.test",
+  "apikey": "EVO_APIKEY_MUST_NOT_BE_STORED"
+}

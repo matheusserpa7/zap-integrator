@@ -1,0 +1,12 @@
+ZAP
+Copyright 2026 ZAP contributors
+
+Licensed under the Apache License, Version 2.0.
+See LICENSE.
+
+ZAP is an independent open-source project and is not affiliated with,
+endorsed by, or sponsored by WhatsApp or Meta.
+
+Evolution API is an external dependency and keeps its own license and
+trademark terms. This repository integrates with Evolution at the API
+level and does not vendor Evolution source code.

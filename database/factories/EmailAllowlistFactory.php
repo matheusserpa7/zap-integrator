@@ -1,0 +1,26 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Database\Factories;
+
+use App\Models\EmailAllowlist;
+use App\Models\User;
+use Illuminate\Database\Eloquent\Factories\Factory;
+
+/**
+ * @extends Factory<EmailAllowlist>
+ */
+class EmailAllowlistFactory extends Factory
+{
+    /**
+     * @return array<string, mixed>
+     */
+    public function definition(): array
+    {
+        return [
+            'email' => fake()->unique()->safeEmail(),
+            'created_by_user_id' => User::factory()->platformAdmin(),
+        ];
+    }
+}

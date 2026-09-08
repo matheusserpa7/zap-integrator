@@ -1,0 +1,11 @@
+{
+  "key": {
+    "remoteJid": "5511999999999@s.whatsapp.net",
+    "fromMe": true,
+    "id": "EVO_SENT_TEXT_1"
+  },
+  "status": "PENDING",
+  "message": {
+    "conversation": "hello"
+  }
+}

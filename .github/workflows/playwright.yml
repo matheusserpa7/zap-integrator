@@ -1,0 +1,70 @@
+name: Playwright
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    paths:
+      - "e2e/**"
+      - "playwright.config.ts"
+      - "app/**"
+      - "bootstrap/**"
+      - "config/**"
+      - "database/**"
+      - "resources/js/**"
+      - "routes/**"
+      - "tests/Fixtures/Evolution/**"
+      - "composer.lock"
+      - "package-lock.json"
+      - ".github/workflows/playwright.yml"
+
+concurrency:
+  group: playwright-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    name: Critical path
+    runs-on: ubuntu-latest
+    env:
+      APP_ENV: e2e
+      APP_KEY: base64:2fl+KTV4KMjxP3a4jXcB/j9zTNl/s5b0dYIFoNo3/4I=
+      APP_URL: http://127.0.0.1:8001
+      ADMIN_EMAIL: admin@zap.test
+      ADMIN_PASSWORD: Zap-e2e-pass-1
+      MESSAGING_DRIVER: fake
+      WEBHOOK_FAKE_DELIVERY: "true"
+      WEBHOOK_ALLOW_HTTP: "true"
+      DB_CONNECTION: sqlite
+      DB_DATABASE: ${{ github.workspace }}/database/e2e.sqlite
+      SESSION_DRIVER: file
+      CACHE_STORE: array
+      QUEUE_CONNECTION: sync
+      BROADCAST_CONNECTION: "null"
+      MAIL_MAILER: array
+      BCRYPT_ROUNDS: "4"
+    steps:
+      - uses: actions/checkout@v5
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.5"
+          extensions: mbstring, pdo_sqlite, pcntl, posix, intl, zip, bcmath
+          coverage: none
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          cache: npm
+      - run: composer install --no-interaction --prefer-dist --no-progress
+      - run: npm ci
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test
+        env:
+          CI: true
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: playwright-report
+          retention-days: 7

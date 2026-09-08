@@ -1,0 +1,15 @@
+{
+  "event": "MESSAGES_UPDATE",
+  "instance": "zap_ws_test_ins_test",
+  "data": {
+    "key": {
+      "remoteJid": "5511888888888@s.whatsapp.net",
+      "fromMe": false,
+      "id": "ABCD1234EFGH"
+    },
+    "update": {
+      "status": 2
+    }
+  },
+  "date_time": "2026-09-07T12:04:00.000Z"
+}

@@ -1,0 +1,45 @@
+name: Bug report
+description: Report broken behavior in ZAP
+title: "fix: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for a report. Search existing issues first.
+        Do not include API keys, webhook secrets, passwords, or message bodies.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: Observable behavior versus what you expected.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: How to reproduce
+      description: Steps from `docker compose up` when possible.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit
+      placeholder: main / v0.1.0 / abcdef1
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, Docker version, and relevant `.env` keys (no secrets).
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I did not attach secrets, tokens, full QR payloads, or media bytes.
+          required: true
+        - label: Default Pest tests were not expected to start Evolution.
+          required: true

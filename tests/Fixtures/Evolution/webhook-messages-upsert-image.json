@@ -1,0 +1,24 @@
+{
+  "event": "MESSAGES_UPSERT",
+  "instance": "zap_ws_test_ins_test",
+  "data": {
+    "key": {
+      "remoteJid": "5511777777777@s.whatsapp.net",
+      "fromMe": false,
+      "id": "IMG5555"
+    },
+    "pushName": "Ana Ribeiro",
+    "message": {
+      "imageMessage": {
+        "mimetype": "image/jpeg",
+        "caption": "foto da loja",
+        "fileLength": "204800",
+        "fileName": "photo.jpg"
+      }
+    },
+    "messageType": "imageMessage",
+    "messageTimestamp": 1757260900
+  },
+  "date_time": "2026-09-07T12:06:00.000Z",
+  "apikey": "EVO_APIKEY_MUST_NOT_BE_STORED"
+}

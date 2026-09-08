@@ -1,0 +1,16 @@
+{
+  "event": "SEND_MESSAGE",
+  "instance": "zap_ws_test_ins_test",
+  "data": {
+    "key": {
+      "remoteJid": "5511888888888@s.whatsapp.net",
+      "fromMe": true,
+      "id": "SENT999"
+    },
+    "status": "PENDING",
+    "message": {
+      "conversation": "outbound-fixture-must-not-be-stored"
+    }
+  },
+  "date_time": "2026-09-07T12:05:00.000Z"
+}

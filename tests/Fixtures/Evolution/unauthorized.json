@@ -1,0 +1,7 @@
+{
+    "status": 401,
+    "error": "Unauthorized",
+    "response": {
+        "message": "Invalid apikey evo_global_secret_do_not_log"
+    }
+}

@@ -1,0 +1,2325 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ZAP — Evolution API Connector</title>
+  <meta name="description" content="Mockup do ZAP, um micro SaaS plug and play para conectar a Evolution API." />
+  <style>
+    :root{
+      --green-900:#075E54;
+      --green-800:#0B6B5D;
+      --green-700:#128C7E;
+      --green-600:#18A884;
+      --green-500:#25D366;
+      --green-400:#5BE08B;
+      --green-100:#EAFBF1;
+      --green-50:#F5FFF8;
+
+      --ink:#10231D;
+      --muted:#6B7D76;
+      --line:#E5ECE8;
+      --white:#FFFFFF;
+      --surface:#F7FAF8;
+      --dark:#0C1A15;
+
+      --shadow:0 18px 55px rgba(7,94,84,.10);
+      --shadow-soft:0 10px 30px rgba(7,94,84,.08);
+      --radius-xl:28px;
+      --radius-lg:20px;
+      --radius-md:14px;
+      --radius-sm:10px;
+    }
+
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color:var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(37,211,102,.08), transparent 28%),
+        var(--surface);
+    }
+
+    a{color:inherit;text-decoration:none}
+    button,input,select{font:inherit}
+
+    .app{
+      min-height:100vh;
+      display:grid;
+      grid-template-columns:260px minmax(0,1fr);
+    }
+
+    /* Sidebar */
+    .sidebar{
+      position:sticky;
+      top:0;
+      height:100vh;
+      padding:24px 18px;
+      background:rgba(255,255,255,.92);
+      backdrop-filter:blur(16px);
+      border-right:1px solid var(--line);
+      display:flex;
+      flex-direction:column;
+      gap:28px;
+      z-index:5;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      padding:4px 8px;
+    }
+
+    .brand-mark{
+      width:42px;
+      height:42px;
+      border-radius:14px;
+      display:grid;
+      place-items:center;
+      color:white;
+      font-weight:900;
+      letter-spacing:-1px;
+      background:linear-gradient(135deg,var(--green-700),var(--green-500));
+      box-shadow:0 10px 22px rgba(37,211,102,.24);
+    }
+
+    .brand strong{
+      display:block;
+      font-size:20px;
+      letter-spacing:-.7px;
+    }
+
+    .brand span{
+      display:block;
+      margin-top:1px;
+      color:var(--muted);
+      font-size:12px;
+    }
+
+    .nav{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+
+    .nav-label{
+      margin:0 10px 4px;
+      color:#9AABA4;
+      font-size:11px;
+      font-weight:800;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+    }
+
+    .nav a{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      padding:12px 14px;
+      border-radius:12px;
+      color:#53645D;
+      font-size:14px;
+      font-weight:650;
+      transition:.2s ease;
+    }
+
+    .nav a:hover{
+      background:var(--green-50);
+      color:var(--green-800);
+    }
+
+    .nav a.active{
+      color:var(--green-900);
+      background:var(--green-100);
+      box-shadow:inset 0 0 0 1px rgba(37,211,102,.12);
+    }
+
+    .nav-icon{
+      width:20px;
+      height:20px;
+      display:grid;
+      place-items:center;
+      font-size:16px;
+    }
+
+    .sidebar-footer{
+      margin-top:auto;
+    }
+
+    .plan-card{
+      border-radius:18px;
+      padding:16px;
+      color:white;
+      background:
+        linear-gradient(160deg, rgba(255,255,255,.08), transparent 50%),
+        linear-gradient(135deg,var(--green-900),var(--green-700));
+      box-shadow:var(--shadow-soft);
+    }
+
+    .plan-card small{opacity:.75}
+    .plan-card strong{
+      display:block;
+      margin:6px 0 12px;
+      font-size:16px;
+    }
+
+    .progress{
+      height:7px;
+      background:rgba(255,255,255,.18);
+      border-radius:99px;
+      overflow:hidden;
+    }
+
+    .progress span{
+      display:block;
+      width:42%;
+      height:100%;
+      background:var(--green-400);
+      border-radius:inherit;
+    }
+
+    /* Main */
+    .main{
+      min-width:0;
+    }
+
+    .topbar{
+      position:sticky;
+      top:0;
+      z-index:4;
+      padding:18px 34px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      background:rgba(247,250,248,.86);
+      backdrop-filter:blur(18px);
+      border-bottom:1px solid rgba(229,236,232,.9);
+    }
+
+    .workspace-title small{
+      display:block;
+      color:var(--muted);
+      font-size:12px;
+      margin-bottom:2px;
+    }
+
+    .workspace-title strong{
+      font-size:16px;
+      letter-spacing:-.2px;
+    }
+
+    .top-actions{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+
+    .icon-btn,.avatar{
+      width:40px;
+      height:40px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background:white;
+      display:grid;
+      place-items:center;
+      color:#43564E;
+    }
+
+    .avatar{
+      color:white;
+      font-weight:800;
+      border:none;
+      background:linear-gradient(135deg,var(--green-700),var(--green-500));
+    }
+
+    .content{
+      max-width:1440px;
+      margin:0 auto;
+      padding:34px;
+    }
+
+    .hero{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:24px;
+      margin-bottom:26px;
+    }
+
+    .hero h1{
+      margin:0 0 8px;
+      font-size:34px;
+      line-height:1.08;
+      letter-spacing:-1.3px;
+    }
+
+    .hero p{
+      margin:0;
+      color:var(--muted);
+      font-size:15px;
+    }
+
+    .primary-btn{
+      border:0;
+      color:white;
+      background:linear-gradient(135deg,var(--green-700),var(--green-500));
+      border-radius:13px;
+      padding:12px 18px;
+      font-weight:800;
+      box-shadow:0 10px 24px rgba(37,211,102,.22);
+      cursor:pointer;
+    }
+
+    .stats{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:16px;
+      margin-bottom:22px;
+    }
+
+    .stat{
+      background:white;
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:18px;
+      box-shadow:0 6px 22px rgba(13,37,29,.03);
+    }
+
+    .stat-top{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:18px;
+    }
+
+    .stat-icon{
+      width:38px;
+      height:38px;
+      border-radius:12px;
+      display:grid;
+      place-items:center;
+      color:var(--green-800);
+      background:var(--green-100);
+      font-size:18px;
+    }
+
+    .delta{
+      font-size:12px;
+      font-weight:800;
+      color:var(--green-700);
+      background:var(--green-50);
+      border-radius:99px;
+      padding:5px 8px;
+    }
+
+    .stat strong{
+      display:block;
+      font-size:26px;
+      letter-spacing:-.8px;
+    }
+
+    .stat span{
+      color:var(--muted);
+      font-size:12px;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:1.25fr .75fr;
+      gap:20px;
+      align-items:start;
+    }
+
+    .stack{
+      display:flex;
+      flex-direction:column;
+      gap:20px;
+    }
+
+    .card{
+      background:white;
+      border:1px solid var(--line);
+      border-radius:var(--radius-lg);
+      box-shadow:0 8px 30px rgba(13,37,29,.035);
+      overflow:hidden;
+    }
+
+    .card-head{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:16px;
+      padding:20px 22px 0;
+    }
+
+    .card-head h2{
+      margin:0;
+      font-size:18px;
+      letter-spacing:-.4px;
+    }
+
+    .card-head p{
+      margin:5px 0 0;
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    .status{
+      display:inline-flex;
+      align-items:center;
+      gap:7px;
+      padding:7px 10px;
+      border-radius:999px;
+      color:var(--green-800);
+      background:var(--green-100);
+      font-size:12px;
+      font-weight:800;
+      white-space:nowrap;
+    }
+
+    .status:before{
+      content:"";
+      width:7px;
+      height:7px;
+      border-radius:50%;
+      background:var(--green-500);
+      box-shadow:0 0 0 4px rgba(37,211,102,.12);
+    }
+
+    .card-body{
+      padding:22px;
+    }
+
+    /* Instance / QR */
+    .instance-panel{
+      display:grid;
+      grid-template-columns:190px 1fr;
+      gap:24px;
+      align-items:center;
+    }
+
+    .qr-wrap{
+      border:1px dashed #CAD7D1;
+      border-radius:18px;
+      padding:16px;
+      background:#FBFDFC;
+      text-align:center;
+    }
+
+    .qr{
+      aspect-ratio:1;
+      display:grid;
+      grid-template-columns:repeat(13,1fr);
+      gap:2px;
+      padding:8px;
+      border-radius:10px;
+      background:white;
+      box-shadow:inset 0 0 0 1px #edf1ef;
+    }
+
+    .qr i{
+      display:block;
+      border-radius:1px;
+      background:#143329;
+      opacity:.1;
+    }
+
+    .qr i:nth-child(2n),
+    .qr i:nth-child(5n),
+    .qr i:nth-child(7n){
+      opacity:1;
+    }
+
+    .qr i:nth-child(11n),
+    .qr i:nth-child(17n){
+      opacity:.25;
+    }
+
+    .qr-caption{
+      margin-top:10px;
+      color:var(--muted);
+      font-size:11px;
+    }
+
+    .instance-info{
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    }
+
+    .field-row{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+    }
+
+    .mini-field{
+      padding:13px 14px;
+      border:1px solid var(--line);
+      border-radius:12px;
+      background:#FBFDFC;
+    }
+
+    .mini-field label{
+      display:block;
+      margin-bottom:5px;
+      color:#91A098;
+      font-size:10px;
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+    }
+
+    .mini-field strong{
+      font-size:13px;
+    }
+
+    .connect-btn{
+      width:max-content;
+      padding:11px 15px;
+      border-radius:12px;
+      border:1px solid rgba(18,140,126,.18);
+      color:var(--green-800);
+      background:var(--green-50);
+      font-weight:800;
+      cursor:pointer;
+    }
+
+    /* Webhook */
+    .form-group{
+      margin-bottom:14px;
+    }
+
+    .form-group label{
+      display:block;
+      margin-bottom:7px;
+      font-size:12px;
+      font-weight:800;
+    }
+
+    .input{
+      width:100%;
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:12px 13px;
+      outline:none;
+      background:#FBFDFC;
+      color:var(--ink);
+    }
+
+    .input:focus{
+      border-color:var(--green-500);
+      box-shadow:0 0 0 4px rgba(37,211,102,.10);
+    }
+
+    .events{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:8px;
+    }
+
+    .chip{
+      border:1px solid var(--line);
+      border-radius:999px;
+      padding:7px 10px;
+      background:white;
+      color:#5E7068;
+      font-size:11px;
+      font-weight:800;
+    }
+
+    .chip.active{
+      color:var(--green-800);
+      background:var(--green-100);
+      border-color:rgba(37,211,102,.20);
+    }
+
+    /* API key */
+    .key-box{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:13px 14px;
+      border-radius:12px;
+      background:#0E201A;
+      color:#D9FCE5;
+      font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+      font-size:12px;
+    }
+
+    .key-box span{
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .key-box button{
+      flex:none;
+      border:0;
+      padding:7px 10px;
+      border-radius:8px;
+      color:white;
+      background:rgba(255,255,255,.12);
+      cursor:pointer;
+    }
+
+    .danger-note{
+      margin-top:10px;
+      color:var(--muted);
+      font-size:11px;
+      line-height:1.5;
+    }
+
+    /* Docs */
+    .docs-layout{
+      display:grid;
+      grid-template-columns:180px 1fr;
+      min-height:380px;
+    }
+
+    .docs-nav{
+      padding:18px;
+      border-right:1px solid var(--line);
+      background:#FBFDFC;
+    }
+
+    .docs-nav strong{
+      display:block;
+      margin-bottom:10px;
+      font-size:11px;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      color:#94A39C;
+    }
+
+    .docs-nav a{
+      display:block;
+      padding:8px 9px;
+      border-radius:8px;
+      color:#61726B;
+      font-size:12px;
+      margin-bottom:2px;
+    }
+
+    .docs-nav a.active{
+      color:var(--green-800);
+      background:var(--green-100);
+      font-weight:800;
+    }
+
+    .docs-content{
+      padding:22px;
+    }
+
+    .docs-content h3{
+      margin:0 0 8px;
+      font-size:20px;
+    }
+
+    .docs-content p{
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.65;
+    }
+
+    .code{
+      position:relative;
+      margin-top:14px;
+      padding:16px;
+      border-radius:14px;
+      background:#0D1F19;
+      color:#D8FCE4;
+      font:12px/1.65 ui-monospace,SFMono-Regular,Menlo,monospace;
+      overflow:auto;
+    }
+
+    .code .muted-code{color:#8FA79D}
+    .code .green{color:#72E7A1}
+    .code .yellow{color:#FFD479}
+
+    .endpoint{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      margin:14px 0 0;
+      padding:11px 12px;
+      border:1px solid var(--line);
+      border-radius:11px;
+      background:#FBFDFC;
+      font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+      font-size:11px;
+    }
+
+    .method{
+      padding:5px 7px;
+      border-radius:7px;
+      color:white;
+      background:var(--green-700);
+      font-family:Inter, sans-serif;
+      font-weight:900;
+      font-size:9px;
+    }
+
+    /* Activity */
+    .activity{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+    }
+
+    .activity-item{
+      display:grid;
+      grid-template-columns:38px 1fr auto;
+      gap:11px;
+      align-items:center;
+      padding:11px 0;
+      border-bottom:1px solid #F0F3F1;
+    }
+
+    .activity-item:last-child{border-bottom:none}
+
+    .activity-icon{
+      width:36px;
+      height:36px;
+      border-radius:11px;
+      display:grid;
+      place-items:center;
+      background:var(--green-100);
+      color:var(--green-800);
+    }
+
+    .activity-item strong{
+      display:block;
+      font-size:12px;
+    }
+
+    .activity-item span{
+      color:var(--muted);
+      font-size:11px;
+    }
+
+    .activity-time{
+      color:#9AAAA3!important;
+      white-space:nowrap;
+    }
+
+    .section-title{
+      margin:28px 0 16px;
+      font-size:13px;
+      text-transform:uppercase;
+      letter-spacing:.10em;
+      color:#8D9D96;
+      font-weight:900;
+    }
+
+
+    /* Conversations */
+    .conversations-card{
+      margin-bottom:22px;
+    }
+
+    .chat-shell{
+      display:grid;
+      grid-template-columns:320px minmax(0,1fr);
+      min-height:620px;
+      border-top:1px solid var(--line);
+    }
+
+    .chat-sidebar{
+      border-right:1px solid var(--line);
+      background:#FBFDFC;
+      display:flex;
+      flex-direction:column;
+      min-width:0;
+    }
+
+    .chat-sidebar-head{
+      padding:18px;
+      border-bottom:1px solid var(--line);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+
+    .chat-sidebar-head h3{
+      margin:0;
+      font-size:16px;
+      letter-spacing:-.3px;
+    }
+
+    .chat-sidebar-head span{
+      color:var(--muted);
+      font-size:12px;
+    }
+
+    .badge{
+      min-width:24px;
+      height:24px;
+      padding:0 8px;
+      border-radius:999px;
+      display:grid;
+      place-items:center;
+      background:var(--green-100);
+      color:var(--green-800);
+      font-size:11px;
+      font-weight:900;
+    }
+
+    .chat-search{
+      padding:16px 18px 10px;
+      border-bottom:1px solid #F0F3F1;
+    }
+
+    .chat-search .input{
+      background:white;
+    }
+
+    .chat-filters{
+      display:flex;
+      gap:8px;
+      padding:0 18px 14px;
+      border-bottom:1px solid #F0F3F1;
+      overflow:auto;
+    }
+
+    .chat-filters .chip{
+      white-space:nowrap;
+      background:white;
+    }
+
+    .conversation-list{
+      flex:1;
+      overflow:auto;
+      padding:8px;
+    }
+
+    .conversation-item{
+      display:grid;
+      grid-template-columns:46px minmax(0,1fr) auto;
+      gap:12px;
+      align-items:center;
+      padding:12px 10px;
+      border-radius:14px;
+      transition:.2s ease;
+      cursor:pointer;
+    }
+
+    .conversation-item:hover{
+      background:white;
+      box-shadow:inset 0 0 0 1px #EDF2EF;
+    }
+
+    .conversation-item.active{
+      background:white;
+      box-shadow:inset 0 0 0 1px rgba(37,211,102,.18), 0 10px 20px rgba(13,37,29,.03);
+    }
+
+    .contact-avatar{
+      width:46px;
+      height:46px;
+      border-radius:14px;
+      display:grid;
+      place-items:center;
+      color:white;
+      font-weight:900;
+      font-size:14px;
+      background:linear-gradient(135deg,var(--green-700),var(--green-500));
+      flex:none;
+    }
+
+    .contact-info{
+      min-width:0;
+    }
+
+    .contact-line{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:5px;
+    }
+
+    .contact-line strong{
+      display:block;
+      min-width:0;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+      font-size:13px;
+    }
+
+    .contact-line small{
+      color:#98A7A0;
+      font-size:11px;
+      white-space:nowrap;
+    }
+
+    .contact-preview{
+      color:var(--muted);
+      font-size:12px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .unread{
+      min-width:21px;
+      height:21px;
+      border-radius:999px;
+      display:grid;
+      place-items:center;
+      background:var(--green-500);
+      color:white;
+      font-size:10px;
+      font-weight:900;
+      padding:0 6px;
+    }
+
+    .chat-main{
+      display:flex;
+      flex-direction:column;
+      min-width:0;
+      background:
+        radial-gradient(circle at top right, rgba(37,211,102,.06), transparent 28%),
+        #F8FCF9;
+    }
+
+    .chat-header{
+      padding:16px 20px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      border-bottom:1px solid var(--line);
+      background:rgba(255,255,255,.84);
+      backdrop-filter:blur(8px);
+    }
+
+    .chat-contact{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+    }
+
+    .chat-contact-meta{
+      min-width:0;
+    }
+
+    .chat-contact-meta strong{
+      display:block;
+      font-size:14px;
+    }
+
+    .chat-contact-meta span{
+      color:var(--muted);
+      font-size:12px;
+    }
+
+    .chat-header-actions{
+      display:flex;
+      gap:8px;
+      flex:none;
+    }
+
+    .circle-icon{
+      width:38px;
+      height:38px;
+      border-radius:12px;
+      display:grid;
+      place-items:center;
+      background:white;
+      border:1px solid var(--line);
+      color:#51645C;
+    }
+
+    .chat-messages{
+      flex:1;
+      overflow:auto;
+      padding:24px;
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    }
+
+    .chat-day{
+      align-self:center;
+      padding:7px 12px;
+      border-radius:999px;
+      background:white;
+      border:1px solid var(--line);
+      color:#7A8B84;
+      font-size:11px;
+      font-weight:800;
+    }
+
+    .message-row{
+      display:flex;
+      gap:10px;
+      max-width:78%;
+    }
+
+    .message-row.me{
+      margin-left:auto;
+      justify-content:flex-end;
+    }
+
+    .message-bubble{
+      padding:12px 14px;
+      border-radius:16px 16px 16px 6px;
+      background:white;
+      border:1px solid #E7EEEA;
+      box-shadow:0 8px 18px rgba(13,37,29,.025);
+    }
+
+    .message-row.me .message-bubble{
+      background:linear-gradient(180deg,#E9FFF1,#D9FADF);
+      border-color:#CDEFD5;
+      border-radius:16px 16px 6px 16px;
+    }
+
+    .message-bubble p{
+      margin:0;
+      font-size:13px;
+      line-height:1.55;
+      color:#193029;
+    }
+
+    .message-meta{
+      margin-top:6px;
+      display:flex;
+      align-items:center;
+      justify-content:flex-end;
+      gap:8px;
+      color:#8B9A94;
+      font-size:10px;
+      font-weight:700;
+    }
+
+    .message-row.them .message-meta{
+      justify-content:flex-start;
+    }
+
+    .message-status{
+      color:var(--green-800);
+      font-weight:900;
+    }
+
+    .chat-composer{
+      padding:16px 20px 20px;
+      border-top:1px solid var(--line);
+      background:rgba(255,255,255,.9);
+      backdrop-filter:blur(8px);
+    }
+
+    .composer-shell{
+      display:flex;
+      align-items:flex-end;
+      gap:10px;
+      padding:10px;
+      border:1px solid var(--line);
+      border-radius:18px;
+      background:white;
+      box-shadow:0 10px 26px rgba(13,37,29,.04);
+    }
+
+    .composer-tools{
+      display:flex;
+      gap:8px;
+      flex:none;
+    }
+
+    .composer-tools .circle-icon{
+      width:40px;
+      height:40px;
+    }
+
+    .composer-input{
+      flex:1;
+      min-height:44px;
+      max-height:120px;
+      resize:none;
+      border:0;
+      outline:none;
+      padding:10px 4px;
+      background:transparent;
+      color:var(--ink);
+      font:inherit;
+      line-height:1.5;
+    }
+
+    .send-btn{
+      width:46px;
+      height:46px;
+      border:0;
+      border-radius:14px;
+      display:grid;
+      place-items:center;
+      color:white;
+      background:linear-gradient(135deg,var(--green-700),var(--green-500));
+      box-shadow:0 12px 24px rgba(37,211,102,.22);
+      cursor:pointer;
+      flex:none;
+    }
+
+
+    /* Webhook Builder */
+    .webhook-builder-card{
+      margin-bottom:22px;
+    }
+
+    .builder-toolbar{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .builder-status{
+      display:inline-flex;
+      align-items:center;
+      gap:7px;
+      padding:7px 10px;
+      border-radius:999px;
+      background:var(--green-100);
+      color:var(--green-800);
+      font-size:11px;
+      font-weight:900;
+    }
+
+    .builder-status:before{
+      content:"";
+      width:7px;
+      height:7px;
+      border-radius:50%;
+      background:var(--green-500);
+    }
+
+    .builder-grid{
+      display:grid;
+      grid-template-columns:260px minmax(420px,1fr) 340px;
+      border-top:1px solid var(--line);
+      min-height:610px;
+    }
+
+    .builder-panel{
+      min-width:0;
+      padding:20px;
+    }
+
+    .builder-panel + .builder-panel{
+      border-left:1px solid var(--line);
+    }
+
+    .builder-panel.soft{
+      background:#FBFDFC;
+    }
+
+    .builder-step{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      margin-bottom:18px;
+    }
+
+    .builder-step-number{
+      width:30px;
+      height:30px;
+      border-radius:10px;
+      display:grid;
+      place-items:center;
+      color:var(--green-800);
+      background:var(--green-100);
+      font-size:11px;
+      font-weight:900;
+    }
+
+    .builder-step strong{
+      display:block;
+      font-size:13px;
+    }
+
+    .builder-step span{
+      display:block;
+      color:var(--muted);
+      font-size:11px;
+      margin-top:1px;
+    }
+
+    .builder-node{
+      position:relative;
+      padding:15px;
+      margin-bottom:14px;
+      border:1px solid var(--line);
+      border-radius:15px;
+      background:white;
+    }
+
+    .builder-node.active{
+      border-color:rgba(37,211,102,.36);
+      box-shadow:0 8px 22px rgba(37,211,102,.07);
+    }
+
+    .builder-node-title{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:10px;
+    }
+
+    .builder-node-title strong{
+      font-size:12px;
+    }
+
+    .builder-node-icon{
+      width:32px;
+      height:32px;
+      border-radius:10px;
+      display:grid;
+      place-items:center;
+      background:var(--green-100);
+      color:var(--green-800);
+      font-size:14px;
+    }
+
+    .builder-connector{
+      width:2px;
+      height:18px;
+      background:#DDE7E2;
+      margin:-14px 0 0 31px;
+    }
+
+    .builder-help{
+      color:var(--muted);
+      font-size:11px;
+      line-height:1.55;
+    }
+
+    .variable-section{
+      margin-top:20px;
+    }
+
+    .variable-section-title{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+      margin-bottom:9px;
+      font-size:11px;
+      font-weight:900;
+      color:#6D7E76;
+      text-transform:uppercase;
+      letter-spacing:.07em;
+    }
+
+    .variable-list{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+    }
+
+    .variable-chip{
+      width:100%;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+      padding:9px 10px;
+      border:1px solid var(--line);
+      border-radius:10px;
+      background:white;
+      cursor:pointer;
+      text-align:left;
+    }
+
+    .variable-chip:hover{
+      border-color:rgba(37,211,102,.32);
+      background:var(--green-50);
+    }
+
+    .variable-chip code{
+      color:var(--green-900);
+      font-size:10px;
+      font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+    }
+
+    .variable-chip span{
+      color:#98A7A0;
+      font-size:9px;
+      text-transform:uppercase;
+      font-weight:900;
+    }
+
+    .mapping-head{
+      display:grid;
+      grid-template-columns:minmax(120px,.8fr) 130px minmax(180px,1.2fr) 32px;
+      gap:8px;
+      padding:0 8px 7px;
+      color:#91A098;
+      font-size:9px;
+      font-weight:900;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+    }
+
+    .mapping-list{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+
+    .mapping-row{
+      display:grid;
+      grid-template-columns:minmax(120px,.8fr) 130px minmax(180px,1.2fr) 32px;
+      gap:8px;
+      align-items:center;
+      padding:8px;
+      border:1px solid #EAF0ED;
+      border-radius:13px;
+      background:#FBFDFC;
+    }
+
+    .mapping-row:focus-within{
+      border-color:rgba(37,211,102,.34);
+      box-shadow:0 0 0 3px rgba(37,211,102,.07);
+      background:white;
+    }
+
+    .builder-input,.builder-select{
+      width:100%;
+      min-width:0;
+      height:38px;
+      border:1px solid var(--line);
+      border-radius:9px;
+      background:white;
+      padding:0 10px;
+      outline:none;
+      color:var(--ink);
+      font-size:11px;
+    }
+
+    .builder-input:focus,.builder-select:focus{
+      border-color:var(--green-500);
+      box-shadow:0 0 0 3px rgba(37,211,102,.09);
+    }
+
+    .builder-input.value{
+      font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+      color:#294139;
+    }
+
+    .remove-param{
+      width:32px;
+      height:32px;
+      border:0;
+      border-radius:9px;
+      background:transparent;
+      color:#A1AEA8;
+      cursor:pointer;
+    }
+
+    .remove-param:hover{
+      background:#FFF1F1;
+      color:#D24A4A;
+    }
+
+    .builder-actions{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-top:14px;
+      flex-wrap:wrap;
+    }
+
+    .builder-secondary-btn{
+      border:1px solid var(--line);
+      background:white;
+      color:#52655D;
+      padding:10px 12px;
+      border-radius:10px;
+      font-size:11px;
+      font-weight:800;
+      cursor:pointer;
+    }
+
+    .builder-secondary-btn:hover{
+      background:var(--green-50);
+      border-color:rgba(37,211,102,.22);
+      color:var(--green-800);
+    }
+
+    .builder-tip{
+      margin-top:18px;
+      padding:12px 13px;
+      border-radius:12px;
+      background:var(--green-50);
+      border:1px solid rgba(37,211,102,.14);
+      color:#587068;
+      font-size:11px;
+      line-height:1.5;
+    }
+
+    .builder-tip code{
+      color:var(--green-900);
+      font-size:10px;
+    }
+
+    .preview-tabs{
+      display:flex;
+      gap:6px;
+      margin-bottom:12px;
+    }
+
+    .preview-tab{
+      border:1px solid var(--line);
+      background:white;
+      color:#74857D;
+      padding:7px 10px;
+      border-radius:9px;
+      font-size:10px;
+      font-weight:900;
+    }
+
+    .preview-tab.active{
+      background:var(--green-100);
+      color:var(--green-800);
+      border-color:rgba(37,211,102,.18);
+    }
+
+    .json-preview{
+      min-height:305px;
+      margin:0;
+      padding:16px;
+      border-radius:14px;
+      background:#0D1F19;
+      color:#DCFBE7;
+      overflow:auto;
+      white-space:pre-wrap;
+      word-break:break-word;
+      font:11px/1.65 ui-monospace,SFMono-Regular,Menlo,monospace;
+    }
+
+    .request-summary{
+      margin-top:12px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+
+    .request-line{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+      padding:10px 11px;
+      border:1px solid var(--line);
+      border-radius:10px;
+      background:white;
+      font-size:10px;
+    }
+
+    .request-line span:first-child{
+      color:#8B9B94;
+      font-weight:800;
+    }
+
+    .request-line code{
+      text-align:right;
+      color:#385047;
+      word-break:break-all;
+      font-size:9px;
+    }
+
+    .test-result{
+      min-height:39px;
+      margin-top:10px;
+      padding:10px 12px;
+      border-radius:10px;
+      background:#F6F9F7;
+      border:1px solid var(--line);
+      color:#7A8C84;
+      font-size:11px;
+    }
+
+    .test-result.success{
+      color:var(--green-800);
+      background:var(--green-50);
+      border-color:rgba(37,211,102,.22);
+    }
+
+    @media (max-width: 1260px){
+      .builder-grid{
+        grid-template-columns:230px minmax(380px,1fr);
+      }
+      .builder-panel.preview-panel{
+        grid-column:1 / -1;
+        border-left:0;
+        border-top:1px solid var(--line);
+      }
+      .json-preview{min-height:220px}
+    }
+
+    @media (max-width: 860px){
+      .builder-grid{grid-template-columns:1fr}
+      .builder-panel + .builder-panel{
+        border-left:0;
+        border-top:1px solid var(--line);
+      }
+      .builder-panel.preview-panel{grid-column:auto}
+      .mapping-head{display:none}
+      .mapping-row{
+        grid-template-columns:1fr;
+        padding:12px;
+      }
+      .remove-param{
+        justify-self:end;
+      }
+    }
+
+    @media (max-width: 1120px){
+      .stats{grid-template-columns:repeat(2,1fr)}
+      .grid{grid-template-columns:1fr}
+      .chat-shell{grid-template-columns:280px minmax(0,1fr)}
+    }
+
+    @media (max-width: 780px){
+      .app{grid-template-columns:1fr}
+      .sidebar{display:none}
+      .topbar{padding:16px 18px}
+      .content{padding:22px 16px 40px}
+      .hero{align-items:flex-start;flex-direction:column}
+      .stats{grid-template-columns:1fr 1fr}
+      .instance-panel{grid-template-columns:1fr}
+      .qr-wrap{max-width:220px}
+      .docs-layout{grid-template-columns:1fr}
+      .docs-nav{display:none}
+      .chat-shell{grid-template-columns:1fr}
+      .chat-sidebar{max-height:300px}
+      .chat-main{min-height:500px}
+    }
+
+    @media (max-width: 520px){
+      .stats{grid-template-columns:1fr}
+      .field-row{grid-template-columns:1fr}
+      .hero h1{font-size:28px}
+      .top-actions .icon-btn{display:none}
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">Z</div>
+        <div>
+          <strong>ZAP</strong>
+          <span>Evolution Connector</span>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <div class="nav-label">Workspace</div>
+        <a class="active" href="#dashboard"><span class="nav-icon">⌂</span> Dashboard</a>
+        <a href="#conversas"><span class="nav-icon">☰</span> Conversas</a>
+        <a href="#instancia"><span class="nav-icon">◫</span> Instância</a>
+        <a href="#webhooks"><span class="nav-icon">↗</span> Webhooks</a>
+        <a href="#apikey"><span class="nav-icon">⌘</span> API Keys</a>
+        <a href="#docs"><span class="nav-icon">⌘</span> Documentação</a>
+      </nav>
+
+      <nav class="nav">
+        <div class="nav-label">Conta</div>
+        <a href="#"><span class="nav-icon">◎</span> Assinatura</a>
+        <a href="#"><span class="nav-icon">⚙</span> Configurações</a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="plan-card">
+          <small>Plano atual</small>
+          <strong>Starter</strong>
+          <div class="progress"><span></span></div>
+          <small style="display:block;margin-top:9px;">4.200 / 10.000 mensagens</small>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main" id="dashboard">
+      <header class="topbar">
+        <div class="workspace-title">
+          <small>Workspace</small>
+          <strong>Minha Empresa</strong>
+        </div>
+        <div class="top-actions">
+          <div class="icon-btn">?</div>
+          <div class="icon-btn">🔔</div>
+          <div class="avatar">MC</div>
+        </div>
+      </header>
+
+      <div class="content">
+        <section class="hero">
+          <div>
+            <h1>Seu WhatsApp conectado.<br>Sem complicação.</h1>
+            <p>Gerencie sua instância da Evolution API, webhooks e credenciais em um só lugar.</p>
+          </div>
+          <button class="primary-btn">+ Nova instância</button>
+        </section>
+
+        <section class="stats">
+          <div class="stat">
+            <div class="stat-top">
+              <div class="stat-icon">◉</div>
+              <div class="delta">Online</div>
+            </div>
+            <strong>1</strong>
+            <span>Instância ativa</span>
+          </div>
+          <div class="stat">
+            <div class="stat-top">
+              <div class="stat-icon">✉</div>
+              <div class="delta">+18%</div>
+            </div>
+            <strong>4.238</strong>
+            <span>Mensagens este mês</span>
+          </div>
+          <div class="stat">
+            <div class="stat-top">
+              <div class="stat-icon">↗</div>
+              <div class="delta">99.9%</div>
+            </div>
+            <strong>3</strong>
+            <span>Webhooks ativos</span>
+          </div>
+          <div class="stat">
+            <div class="stat-top">
+              <div class="stat-icon">⚡</div>
+              <div class="delta">42ms</div>
+            </div>
+            <strong>99.98%</strong>
+            <span>Disponibilidade</span>
+          </div>
+
+        </section>
+
+        <section class="card conversations-card" id="conversas">
+          <div class="card-head">
+            <div>
+              <h2>Conversas</h2>
+              <p>Layout de atendimento com lista de contatos à esquerda e chat ativo à direita.</p>
+            </div>
+            <span class="status">Tempo real</span>
+          </div>
+
+          <div class="chat-shell">
+            <aside class="chat-sidebar">
+              <div class="chat-sidebar-head">
+                <div>
+                  <h3>Inbox</h3>
+                  <span>24 conversas ativas</span>
+                </div>
+                <div class="badge">8</div>
+              </div>
+
+              <div class="chat-search">
+                <input class="input" value="" placeholder="Buscar contato ou número..." />
+              </div>
+
+              <div class="chat-filters">
+                <span class="chip active">Todos</span>
+                <span class="chip">Não lidos</span>
+                <span class="chip">Aguardando</span>
+                <span class="chip">Finalizados</span>
+              </div>
+
+              <div class="conversation-list">
+                <div class="conversation-item active">
+                  <div class="contact-avatar">AR</div>
+                  <div class="contact-info">
+                    <div class="contact-line">
+                      <strong>Ana Ribeiro</strong>
+                      <small>09:41</small>
+                    </div>
+                    <div class="contact-preview">Olá! Quero saber como integrar com meu CRM.</div>
+                  </div>
+                  <div class="unread">2</div>
+                </div>
+
+                <div class="conversation-item">
+                  <div class="contact-avatar">JT</div>
+                  <div class="contact-info">
+                    <div class="contact-line">
+                      <strong>João Tech</strong>
+                      <small>09:15</small>
+                    </div>
+                    <div class="contact-preview">Consegui ler o QR Code, mas o webhook ainda não chegou.</div>
+                  </div>
+                  <div></div>
+                </div>
+
+                <div class="conversation-item">
+                  <div class="contact-avatar">CL</div>
+                  <div class="contact-info">
+                    <div class="contact-line">
+                      <strong>Camila Lopes</strong>
+                      <small>Ontem</small>
+                    </div>
+                    <div class="contact-preview">Pode me mandar um exemplo de requisição em cURL?</div>
+                  </div>
+                  <div class="unread">1</div>
+                </div>
+
+                <div class="conversation-item">
+                  <div class="contact-avatar">MS</div>
+                  <div class="contact-info">
+                    <div class="contact-line">
+                      <strong>Marcos Silva</strong>
+                      <small>Ontem</small>
+                    </div>
+                    <div class="contact-preview">Obrigado, integração funcionando perfeitamente.</div>
+                  </div>
+                  <div></div>
+                </div>
+
+                <div class="conversation-item">
+                  <div class="contact-avatar">LP</div>
+                  <div class="contact-info">
+                    <div class="contact-line">
+                      <strong>Loja Premium</strong>
+                      <small>Seg</small>
+                    </div>
+                    <div class="contact-preview">Vocês têm documentação para API Key e autenticação?</div>
+                  </div>
+                  <div></div>
+                </div>
+              </div>
+            </aside>
+
+            <section class="chat-main">
+              <div class="chat-header">
+                <div class="chat-contact">
+                  <div class="contact-avatar">AR</div>
+                  <div class="chat-contact-meta">
+                    <strong>Ana Ribeiro</strong>
+                    <span>Online agora · +55 11 99999-0101</span>
+                  </div>
+                </div>
+
+                <div class="chat-header-actions">
+                  <div class="circle-icon">☎</div>
+                  <div class="circle-icon">⌕</div>
+                  <div class="circle-icon">⋯</div>
+                </div>
+              </div>
+
+              <div class="chat-messages">
+                <div class="chat-day">Hoje</div>
+
+                <div class="message-row them">
+                  <div class="message-bubble">
+                    <p>Olá! Estou avaliando o ZAP para conectar meu WhatsApp com um sistema interno.</p>
+                    <div class="message-meta">
+                      <span>09:32</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="message-row me">
+                  <div class="message-bubble">
+                    <p>Perfeito! Você pode criar a instância, ler o QR Code e depois configurar seus webhooks direto no painel.</p>
+                    <div class="message-meta">
+                      <span>09:34</span>
+                      <span class="message-status">✓✓</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="message-row them">
+                  <div class="message-bubble">
+                    <p>Legal. E eu consigo gerar uma API Key para enviar mensagens pela minha aplicação?</p>
+                    <div class="message-meta">
+                      <span>09:36</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="message-row me">
+                  <div class="message-bubble">
+                    <p>Sim. Na seção “API Keys” você gera uma chave com escopos específicos, como <b>messages:send</b> e <b>instances:read</b>.</p>
+                    <div class="message-meta">
+                      <span>09:38</span>
+                      <span class="message-status">✓✓</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="message-row them">
+                  <div class="message-bubble">
+                    <p>Ótimo! Quero saber também como integrar com meu CRM.</p>
+                    <div class="message-meta">
+                      <span>09:41</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="chat-composer">
+                <div class="composer-shell">
+                  <div class="composer-tools">
+                    <div class="circle-icon">＋</div>
+                    <div class="circle-icon">☺</div>
+                  </div>
+                  <textarea class="composer-input" placeholder="Digite sua mensagem..."></textarea>
+                  <button class="send-btn">➤</button>
+                </div>
+              </div>
+            </section>
+          </div>
+        </section>
+
+
+        <section class="card webhook-builder-card" id="webhooks">
+          <div class="card-head" style="padding-bottom:20px;">
+            <div>
+              <h2>Webhook Builder</h2>
+              <p>Monte o payload que seu sistema vai receber sem precisar transformar o JSON manualmente.</p>
+            </div>
+            <div class="builder-toolbar">
+              <span class="builder-status">Ativo</span>
+              <button class="builder-secondary-btn" type="button">Duplicar</button>
+              <button class="primary-btn" type="button">Salvar webhook</button>
+            </div>
+          </div>
+
+          <div class="builder-grid" id="webhookBuilder">
+            <aside class="builder-panel soft">
+              <div class="builder-step">
+                <div class="builder-step-number">01</div>
+                <div>
+                  <strong>Escolha o gatilho</strong>
+                  <span>Quando o fluxo deve executar</span>
+                </div>
+              </div>
+
+              <div class="builder-node active">
+                <div class="builder-node-title">
+                  <div>
+                    <strong>WhatsApp Event</strong>
+                    <div class="builder-help">Instância zap-prod-01</div>
+                  </div>
+                  <div class="builder-node-icon">⚡</div>
+                </div>
+                <div class="form-group" style="margin-bottom:0;">
+                  <label>Evento normalizado</label>
+                  <select class="builder-select" id="builderEvent">
+                    <option value="message.received">message.received</option>
+                    <option value="message.updated">message.updated</option>
+                    <option value="instance.connected">instance.connected</option>
+                    <option value="instance.disconnected">instance.disconnected</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="builder-connector"></div>
+
+              <div class="builder-node">
+                <div class="builder-node-title">
+                  <div>
+                    <strong>HTTP Request</strong>
+                    <div class="builder-help">Entrega para seu sistema</div>
+                  </div>
+                  <div class="builder-node-icon">↗</div>
+                </div>
+                <div class="form-group">
+                  <label>Endpoint</label>
+                  <input class="builder-input" id="builderEndpoint" value="https://crm.minhaempresa.com/webhooks/zap" />
+                </div>
+                <div class="field-row">
+                  <div class="form-group" style="margin-bottom:0;">
+                    <label>Método</label>
+                    <select class="builder-select">
+                      <option>POST</option>
+                    </select>
+                  </div>
+                  <div class="form-group" style="margin-bottom:0;">
+                    <label>Formato</label>
+                    <select class="builder-select">
+                      <option>JSON</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div class="variable-section">
+                <div class="variable-section-title">
+                  <span>Dados disponíveis</span>
+                  <span>clique para usar</span>
+                </div>
+                <div class="variable-list">
+                  <button class="variable-chip" type="button" data-variable="message.text"><code>message.text</code><span>string</span></button>
+                  <button class="variable-chip" type="button" data-variable="message.from"><code>message.from</code><span>string</span></button>
+                  <button class="variable-chip" type="button" data-variable="message.id"><code>message.id</code><span>string</span></button>
+                  <button class="variable-chip" type="button" data-variable="contact.name"><code>contact.name</code><span>string</span></button>
+                  <button class="variable-chip" type="button" data-variable="instance.id"><code>instance.id</code><span>string</span></button>
+                  <button class="variable-chip" type="button" data-variable="event.type"><code>event.type</code><span>string</span></button>
+                  <button class="variable-chip" type="button" data-variable="event.timestamp"><code>event.timestamp</code><span>datetime</span></button>
+                </div>
+              </div>
+            </aside>
+
+            <section class="builder-panel">
+              <div class="builder-step">
+                <div class="builder-step-number">02</div>
+                <div>
+                  <strong>Monte o payload</strong>
+                  <span>Defina o nome de cada parâmetro e de onde vem o valor</span>
+                </div>
+              </div>
+
+              <div class="mapping-head">
+                <span>Parâmetro</span>
+                <span>Tipo do valor</span>
+                <span>Valor</span>
+                <span></span>
+              </div>
+
+              <div class="mapping-list" id="mappingList">
+                <div class="mapping-row">
+                  <input class="builder-input param-name" value="customer.name" aria-label="Nome do parâmetro" />
+                  <select class="builder-select value-mode" aria-label="Tipo do valor">
+                    <option value="field" selected>Campo do evento</option>
+                    <option value="fixed">Valor fixo</option>
+                    <option value="expression">Expressão</option>
+                  </select>
+                  <input class="builder-input value param-value" value="contact.name" aria-label="Valor do parâmetro" />
+                  <button class="remove-param" type="button" aria-label="Remover parâmetro">×</button>
+                </div>
+
+                <div class="mapping-row">
+                  <input class="builder-input param-name" value="customer.phone" aria-label="Nome do parâmetro" />
+                  <select class="builder-select value-mode" aria-label="Tipo do valor">
+                    <option value="field" selected>Campo do evento</option>
+                    <option value="fixed">Valor fixo</option>
+                    <option value="expression">Expressão</option>
+                  </select>
+                  <input class="builder-input value param-value" value="message.from" aria-label="Valor do parâmetro" />
+                  <button class="remove-param" type="button" aria-label="Remover parâmetro">×</button>
+                </div>
+
+                <div class="mapping-row">
+                  <input class="builder-input param-name" value="message.text" aria-label="Nome do parâmetro" />
+                  <select class="builder-select value-mode" aria-label="Tipo do valor">
+                    <option value="field" selected>Campo do evento</option>
+                    <option value="fixed">Valor fixo</option>
+                    <option value="expression">Expressão</option>
+                  </select>
+                  <input class="builder-input value param-value" value="message.text" aria-label="Valor do parâmetro" />
+                  <button class="remove-param" type="button" aria-label="Remover parâmetro">×</button>
+                </div>
+
+                <div class="mapping-row">
+                  <input class="builder-input param-name" value="source" aria-label="Nome do parâmetro" />
+                  <select class="builder-select value-mode" aria-label="Tipo do valor">
+                    <option value="field">Campo do evento</option>
+                    <option value="fixed" selected>Valor fixo</option>
+                    <option value="expression">Expressão</option>
+                  </select>
+                  <input class="builder-input value param-value" value="zap" aria-label="Valor do parâmetro" />
+                  <button class="remove-param" type="button" aria-label="Remover parâmetro">×</button>
+                </div>
+
+                <div class="mapping-row">
+                  <input class="builder-input param-name" value="reference" aria-label="Nome do parâmetro" />
+                  <select class="builder-select value-mode" aria-label="Tipo do valor">
+                    <option value="field">Campo do evento</option>
+                    <option value="fixed">Valor fixo</option>
+                    <option value="expression" selected>Expressão</option>
+                  </select>
+                  <input class="builder-input value param-value" value="zap-{{ message.id }}" aria-label="Valor do parâmetro" />
+                  <button class="remove-param" type="button" aria-label="Remover parâmetro">×</button>
+                </div>
+              </div>
+
+              <div class="builder-actions">
+                <button class="builder-secondary-btn" id="addParameter" type="button">+ Adicionar parâmetro</button>
+                <span class="builder-help">Use nomes com ponto para criar objetos: <b>customer.name</b></span>
+              </div>
+
+              <div class="builder-tip">
+                <b>3 formas de preencher um valor:</b><br>
+                <b>Fixo</b> — texto digitado por você, como <code>lead_whatsapp</code>.<br>
+                <b>Campo do evento</b> — dado recebido do WhatsApp, como <code>message.text</code>.<br>
+                <b>Expressão</b> — mistura texto e variáveis, como <code>zap-{{ message.id }}</code>.
+              </div>
+            </section>
+
+            <aside class="builder-panel soft preview-panel">
+              <div class="builder-step">
+                <div class="builder-step-number">03</div>
+                <div>
+                  <strong>Preview & Test</strong>
+                  <span>Veja exatamente o que será enviado</span>
+                </div>
+              </div>
+
+              <div class="preview-tabs">
+                <button class="preview-tab active" type="button">JSON Body</button>
+                <button class="preview-tab" type="button" disabled title="Mockup">Headers</button>
+              </div>
+
+              <pre class="json-preview" id="jsonPreview"></pre>
+
+              <div class="request-summary">
+                <div class="request-line">
+                  <span>Destino</span>
+                  <code id="endpointPreview">https://crm.minhaempresa.com/webhooks/zap</code>
+                </div>
+                <div class="request-line">
+                  <span>Assinatura</span>
+                  <code>X-ZAP-Signature: sha256=••••••••</code>
+                </div>
+                <div class="request-line">
+                  <span>Evento</span>
+                  <code id="eventPreview">message.received</code>
+                </div>
+              </div>
+
+              <button class="primary-btn" id="testWebhook" type="button" style="width:100%;margin-top:14px;">▶ Testar webhook</button>
+              <div class="test-result" id="testResult">Nenhum teste executado ainda.</div>
+            </aside>
+          </div>
+        </section>
+
+        <div class="grid">
+          <div class="stack">
+            <section class="card" id="instancia">
+              <div class="card-head">
+                <div>
+                  <h2>Conectar WhatsApp</h2>
+                  <p>Leia o QR Code com o WhatsApp para ativar sua instância.</p>
+                </div>
+                <span class="status">Aguardando leitura</span>
+              </div>
+              <div class="card-body">
+                <div class="instance-panel">
+                  <div class="qr-wrap">
+                    <div class="qr">
+                      <!-- decorative mock QR -->
+                      <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+                    </div>
+                    <div class="qr-caption">QR Code expira em 01:42</div>
+                  </div>
+
+                  <div class="instance-info">
+                    <div class="field-row">
+                      <div class="mini-field">
+                        <label>Instância</label>
+                        <strong>zap-prod-01</strong>
+                      </div>
+                      <div class="mini-field">
+                        <label>Status</label>
+                        <strong style="color:#128C7E;">READY</strong>
+                      </div>
+                    </div>
+                    <div class="mini-field">
+                      <label>Evolution API</label>
+                      <strong>api.zap.app/instance/zap-prod-01</strong>
+                    </div>
+                    <div class="mini-field">
+                      <label>Última sincronização</label>
+                      <strong>há 12 segundos</strong>
+                    </div>
+                    <button class="connect-btn">Atualizar QR Code</button>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section class="card" id="docs">
+              <div class="card-head">
+                <div>
+                  <h2>Documentação</h2>
+                  <p>Integração simples para colocar seu produto no ar em minutos.</p>
+                </div>
+                <span class="status">API v1</span>
+              </div>
+
+              <div class="docs-layout">
+                <aside class="docs-nav">
+                  <strong>Começando</strong>
+                  <a class="active" href="#">Visão geral</a>
+                  <a href="#">Autenticação</a>
+                  <a href="#">Instâncias</a>
+                  <a href="#">Mensagens</a>
+                  <a href="#">Webhooks</a>
+                  <a href="#">Erros</a>
+                </aside>
+
+                <div class="docs-content">
+                  <h3>Envie sua primeira mensagem</h3>
+                  <p>
+                    Use sua API Key no header <b>Authorization</b> e informe a instância criada no painel.
+                    O ZAP abstrai a configuração da Evolution API para você.
+                  </p>
+
+                  <div class="endpoint">
+                    <span class="method">POST</span>
+                    https://api.zap.app/v1/messages/send
+                  </div>
+
+                  <div class="code"><span class="muted-code">curl</span> -X POST \
+  <span class="yellow">https://api.zap.app/v1/messages/send</span> \
+  -H <span class="green">"Authorization: Bearer zap_live_xxxxxxxxx"</span> \
+  -H <span class="green">"Content-Type: application/json"</span> \
+  -d '{
+    <span class="green">"instance"</span>: <span class="yellow">"zap-prod-01"</span>,
+    <span class="green">"number"</span>: <span class="yellow">"5511999999999"</span>,
+    <span class="green">"text"</span>: <span class="yellow">"Olá! Mensagem enviada pelo ZAP 🚀"</span>
+  }'</div>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <div class="stack">
+            <section class="card" id="apikey">
+              <div class="card-head">
+                <div>
+                  <h2>Chave de API</h2>
+                  <p>Use esta chave para autenticar suas requisições.</p>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="key-box">
+                  <span>zap_live_92a7••••••••••••••••••••••c4f1</span>
+                  <button>Copiar</button>
+                </div>
+                <div class="danger-note">
+                  Por segurança, a chave completa é exibida apenas uma vez ao ser criada.
+                </div>
+                <button class="connect-btn" style="margin-top:14px;">+ Gerar nova chave</button>
+              </div>
+            </section>
+
+            <section class="card">
+              <div class="card-head">
+                <div>
+                  <h2>Atividade recente</h2>
+                  <p>Últimos eventos processados pela plataforma.</p>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="activity">
+                  <div class="activity-item">
+                    <div class="activity-icon">✉</div>
+                    <div>
+                      <strong>Mensagem entregue</strong>
+                      <span>+55 11 99999-0101</span>
+                    </div>
+                    <span class="activity-time">agora</span>
+                  </div>
+                  <div class="activity-item">
+                    <div class="activity-icon">↗</div>
+                    <div>
+                      <strong>Webhook processado</strong>
+                      <span>MESSAGES_UPSERT · 200 OK</span>
+                    </div>
+                    <span class="activity-time">14s</span>
+                  </div>
+                  <div class="activity-item">
+                    <div class="activity-icon">◉</div>
+                    <div>
+                      <strong>Instância conectada</strong>
+                      <span>zap-prod-01</span>
+                    </div>
+                    <span class="activity-time">8m</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    (function () {
+      const root = document.getElementById('webhookBuilder');
+      if (!root || root.dataset.initialized === 'true') return;
+      root.dataset.initialized = 'true';
+
+      const list = root.querySelector('#mappingList');
+      const preview = root.querySelector('#jsonPreview');
+      const addButton = root.querySelector('#addParameter');
+      const endpointInput = root.querySelector('#builderEndpoint');
+      const endpointPreview = root.querySelector('#endpointPreview');
+      const eventSelect = root.querySelector('#builderEvent');
+      const eventPreview = root.querySelector('#eventPreview');
+      const testButton = root.querySelector('#testWebhook');
+      const testResult = root.querySelector('#testResult');
+
+      const sample = {
+        'message.text': 'Olá! Quero saber mais sobre o produto.',
+        'message.from': '5511999999999',
+        'message.id': 'wamid.HBgMNTUxMTk5OTk5OTk5ORUCABIYFjNF',
+        'contact.name': 'Ana Ribeiro',
+        'instance.id': 'ins_01J7ZAP01',
+        'event.type': 'message.received',
+        'event.timestamp': '2026-09-07T15:18:00Z'
+      };
+
+      let activeValueInput = null;
+
+      function setNested(target, path, value) {
+        const parts = path.split('.').map(part => part.trim()).filter(Boolean);
+        if (!parts.length) return;
+        let cursor = target;
+        parts.forEach((part, index) => {
+          if (index === parts.length - 1) {
+            cursor[part] = value;
+          } else {
+            if (!cursor[part] || typeof cursor[part] !== 'object') cursor[part] = {};
+            cursor = cursor[part];
+          }
+        });
+      }
+
+      function resolveTemplate(value) {
+        return value.replace(/\{\{\s*([^}]+?)\s*\}\}/g, function (_, path) {
+          const key = path.trim();
+          return Object.prototype.hasOwnProperty.call(sample, key) ? sample[key] : '{{ ' + key + ' }}';
+        });
+      }
+
+      function resolveValue(mode, raw) {
+        if (mode === 'fixed') return raw;
+        if (mode === 'field') return Object.prototype.hasOwnProperty.call(sample, raw.trim()) ? sample[raw.trim()] : null;
+        return resolveTemplate(raw);
+      }
+
+      function updatePlaceholders(row) {
+        const mode = row.querySelector('.value-mode').value;
+        const input = row.querySelector('.param-value');
+        if (mode === 'fixed') input.placeholder = 'Ex.: lead_whatsapp';
+        if (mode === 'field') input.placeholder = 'Ex.: message.text';
+        if (mode === 'expression') input.placeholder = 'Ex.: zap-{{ message.id }}';
+      }
+
+      function renderPreview() {
+        const payload = {};
+        list.querySelectorAll('.mapping-row').forEach(row => {
+          const name = row.querySelector('.param-name').value.trim();
+          const mode = row.querySelector('.value-mode').value;
+          const raw = row.querySelector('.param-value').value;
+          if (!name) return;
+          setNested(payload, name, resolveValue(mode, raw));
+        });
+        preview.textContent = JSON.stringify(payload, null, 2);
+        endpointPreview.textContent = endpointInput.value.trim() || 'Endpoint não definido';
+        eventPreview.textContent = eventSelect.value;
+      }
+
+      function bindRow(row) {
+        const mode = row.querySelector('.value-mode');
+        const value = row.querySelector('.param-value');
+        const remove = row.querySelector('.remove-param');
+
+        row.querySelectorAll('input, select').forEach(control => {
+          control.addEventListener('input', renderPreview);
+          control.addEventListener('change', renderPreview);
+        });
+
+        value.addEventListener('focus', function () {
+          activeValueInput = value;
+        });
+
+        mode.addEventListener('change', function () {
+          updatePlaceholders(row);
+        });
+
+        remove.addEventListener('click', function () {
+          const rows = list.querySelectorAll('.mapping-row');
+          if (rows.length === 1) {
+            row.querySelector('.param-name').value = '';
+            value.value = '';
+          } else {
+            row.remove();
+          }
+          renderPreview();
+        });
+
+        updatePlaceholders(row);
+      }
+
+      list.querySelectorAll('.mapping-row').forEach(bindRow);
+
+      root.querySelectorAll('.variable-chip').forEach(button => {
+        button.addEventListener('click', function () {
+          let input = activeValueInput;
+          if (!input || !root.contains(input)) {
+            const lastRow = list.querySelector('.mapping-row:last-child');
+            input = lastRow ? lastRow.querySelector('.param-value') : null;
+          }
+          if (!input) return;
+          const row = input.closest('.mapping-row');
+          row.querySelector('.value-mode').value = 'field';
+          input.value = button.dataset.variable;
+          updatePlaceholders(row);
+          input.focus();
+          renderPreview();
+        });
+      });
+
+      addButton.addEventListener('click', function () {
+        const row = document.createElement('div');
+        row.className = 'mapping-row';
+        row.innerHTML = `
+          <input class="builder-input param-name" placeholder="parameter.name" aria-label="Nome do parâmetro" />
+          <select class="builder-select value-mode" aria-label="Tipo do valor">
+            <option value="field">Campo do evento</option>
+            <option value="fixed">Valor fixo</option>
+            <option value="expression">Expressão</option>
+          </select>
+          <input class="builder-input value param-value" placeholder="Ex.: message.text" aria-label="Valor do parâmetro" />
+          <button class="remove-param" type="button" aria-label="Remover parâmetro">×</button>
+        `;
+        list.appendChild(row);
+        bindRow(row);
+        row.querySelector('.param-name').focus();
+        renderPreview();
+      });
+
+      endpointInput.addEventListener('input', renderPreview);
+      eventSelect.addEventListener('change', function () {
+        sample['event.type'] = eventSelect.value;
+        renderPreview();
+      });
+
+      testButton.addEventListener('click', function () {
+        testButton.disabled = true;
+        testButton.textContent = 'Testando...';
+        testResult.className = 'test-result';
+        testResult.textContent = 'Enviando payload de exemplo para o endpoint...';
+
+        window.setTimeout(function () {
+          testButton.disabled = false;
+          testButton.textContent = '▶ Testar webhook';
+          testResult.className = 'test-result success';
+          testResult.innerHTML = '<b>200 OK</b> · 184 ms · Payload entregue e assinatura validada.';
+        }, 650);
+      });
+
+      renderPreview();
+    })();
+  </script>
+
+</body>
+</html>

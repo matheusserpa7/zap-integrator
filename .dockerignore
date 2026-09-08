@@ -1,0 +1,24 @@
+.git
+.gitattributes
+.github
+.env
+.env.*
+!.env.example
+node_modules
+vendor
+public/hot
+public/build
+storage/logs
+storage/framework/cache
+storage/framework/sessions
+storage/framework/views
+bootstrap/cache/*.php
+tests
+docs
+specs
+preview (6).html
+ZAP_SDD.md
+*.md
+!README.md
+.cursor
+agent-transcripts
