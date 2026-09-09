@@ -50,7 +50,7 @@ jobs:
       BROADCAST_CONNECTION: "null"
       MAIL_MAILER: array
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
@@ -80,7 +80,7 @@ jobs:
     name: Frontend quality
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v5
         with:
           node-version: "24"
@@ -96,6 +96,6 @@ jobs:
     name: Docker image
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - name: Build application image
         run: docker build --target php-runtime -t zap:ci .
