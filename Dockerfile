@@ -24,7 +24,7 @@ RUN composer install \
 COPY . .
 RUN composer dump-autoload --optimize --no-dev --no-scripts
 
-FROM php:8.5.9-fpm-alpine3.24 AS php-runtime
+FROM php:8.5.10-fpm-alpine3.24 AS php-runtime
 WORKDIR /var/www/html
 
 RUN apk add --no-cache \
