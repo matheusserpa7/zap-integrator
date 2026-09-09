@@ -3,7 +3,7 @@ services:
         image: nginx:1.28.0-alpine
         depends_on:
             app:
-                condition: service_started
+                condition: service_healthy
             reverb:
                 condition: service_started
         ports:
@@ -43,11 +43,11 @@ services:
         networks:
             - zap
         healthcheck:
-            test: ["CMD-SHELL", "php -r \"echo 'ok';\""]
-            interval: 15s
-            timeout: 5s
-            retries: 8
-            start_period: 45s
+            test: ["CMD-SHELL", "php -r 'exit(@fsockopen(\"127.0.0.1\", 9000) ? 0 : 1);'"]
+            interval: 5s
+            timeout: 3s
+            retries: 12
+            start_period: 20s
 
     vite:
         image: node:24.7.0-alpine3.21
@@ -99,13 +99,14 @@ services:
         environment:
             DB_HOST: postgres
             REDIS_HOST: redis
+            SKIP_BOOTSTRAP: "true"
         command: php artisan horizon
         volumes:
             - .:/var/www/html
             - zap_media:/var/www/html/storage/app/media
         depends_on:
             app:
-                condition: service_started
+                condition: service_healthy
             redis:
                 condition: service_healthy
         networks:
@@ -121,12 +122,13 @@ services:
         environment:
             DB_HOST: postgres
             REDIS_HOST: redis
+            SKIP_BOOTSTRAP: "true"
         command: php artisan schedule:work
         volumes:
             - .:/var/www/html
         depends_on:
             app:
-                condition: service_started
+                condition: service_healthy
             postgres:
                 condition: service_healthy
         networks:
@@ -144,12 +146,13 @@ services:
             REDIS_HOST: redis
             REVERB_SERVER_HOST: 0.0.0.0
             REVERB_SERVER_PORT: 8080
+            SKIP_BOOTSTRAP: "true"
         command: php artisan reverb:start --host=0.0.0.0 --port=8080
         volumes:
             - .:/var/www/html
         depends_on:
             app:
-                condition: service_started
+                condition: service_healthy
             redis:
                 condition: service_healthy
         networks:
