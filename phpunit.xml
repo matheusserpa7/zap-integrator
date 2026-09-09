@@ -30,7 +30,7 @@
         <env name="DB_USERNAME" value="zap" force="false"/>
         <env name="DB_PASSWORD" value="zap" force="false"/>
         <env name="MAIL_MAILER" value="array"/>
-        <env name="QUEUE_CONNECTION" value="sync" force="false"/>
+        <env name="QUEUE_CONNECTION" value="sync" force="true"/>
         <env name="SESSION_DRIVER" value="array"/>
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
