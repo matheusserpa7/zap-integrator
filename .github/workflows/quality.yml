@@ -47,7 +47,7 @@ jobs:
       CACHE_STORE: redis
       QUEUE_CONNECTION: redis
       SESSION_DRIVER: array
-      BROADCAST_CONNECTION: null
+      BROADCAST_CONNECTION: "null"
       MAIL_MAILER: array
     steps:
       - uses: actions/checkout@v5
