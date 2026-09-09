@@ -10,7 +10,7 @@ COPY vite.config.ts tsconfig.json ./
 COPY resources/js ./resources/js
 RUN npm run build
 
-FROM composer:2.8.12 AS composer-builder
+FROM composer:2.10.3 AS composer-builder
 WORKDIR /app
 COPY composer.json composer.lock ./
 RUN composer install \
