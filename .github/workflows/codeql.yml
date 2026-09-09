@@ -18,7 +18,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [javascript-typescript, php]
+        # CodeQL does not support PHP; Larastan covers PHP analysis in Quality.
+        language: [javascript-typescript]
     steps:
       - uses: actions/checkout@v5
       - uses: github/codeql-action/init@v3
