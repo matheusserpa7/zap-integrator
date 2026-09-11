@@ -1,13 +1,18 @@
 <?php
 
+use App\Domain\Messaging\Actions\MarkOutboundMessageResult;
 use App\Domain\Messaging\Contracts\MessagingProvider;
 use App\Enums\ApiAbility;
 use App\Enums\InstanceStatus;
 use App\Enums\MessageStatus;
+use App\Events\MessageAccepted;
+use App\Events\MessageFailed;
+use App\Events\MessageSent;
 use App\Jobs\SendOutboundText;
 use App\Models\Instance;
 use App\Models\Message;
 use App\Models\User;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
 use Tests\Fakes\FakeMessagingProvider;
@@ -18,6 +23,7 @@ function sendTextHeaders(string $idempotencyKey = 'send-1'): array
 }
 
 it('accepts outbound text with 202 and dispatches a provider job', function () {
+    Event::fake([MessageAccepted::class]);
     Queue::fake([SendOutboundText::class]);
     Http::preventStrayRequests();
 
@@ -45,6 +51,11 @@ it('accepts outbound text with 202 and dispatches a provider job', function () {
 
     Queue::assertPushedOn('provider', SendOutboundText::class);
     Http::assertNothingSent();
+    Event::assertDispatched(MessageAccepted::class, function (MessageAccepted $event) use ($owner, $message): bool {
+        return $event->workspacePublicId === $owner->ownedWorkspace?->public_id
+            && $event->messagePublicId === $message?->public_id
+            && $event->status === 'sending';
+    });
 });
 
 it('replays the stored 202 response for the same idempotency key and hash', function () {
@@ -171,6 +182,7 @@ it('returns 404 when sending through another workspace instance', function () {
 });
 
 it('marks the outbound message sent when the provider job succeeds', function () {
+    Event::fake([MessageSent::class]);
     Http::preventStrayRequests();
     $this->app->instance(MessagingProvider::class, new FakeMessagingProvider);
 
@@ -190,4 +202,48 @@ it('marks the outbound message sent when the provider job succeeds', function ()
 
     expect($message?->status)->toBe(MessageStatus::Sent)
         ->and($message?->provider_message_id)->toStartWith('FAKE_SENT_');
+
+    Event::assertDispatched(MessageSent::class, function (MessageSent $event) use ($owner, $message): bool {
+        return $event->workspacePublicId === $owner->ownedWorkspace?->public_id
+            && $event->messagePublicId === $message?->public_id
+            && $event->status === 'sent';
+    });
+});
+
+it('marks the outbound message failed when the provider job exhausts retries', function () {
+    Event::fake([MessageFailed::class]);
+    Queue::fake([SendOutboundText::class]);
+    Http::preventStrayRequests();
+
+    $owner = User::factory()->withWorkspace()->create();
+    $instance = Instance::factory()->for($owner->ownedWorkspace)->connected()->create();
+    $created = createWorkspaceApiToken($owner, [ApiAbility::MessagesSend->value]);
+    $provider = new FakeMessagingProvider;
+    $provider->sendShouldFail = true;
+    $this->app->instance(MessagingProvider::class, $provider);
+
+    $this->withToken($created->plainTextToken)
+        ->postJson(route('api.v1.messages.text'), [
+            'instance_id' => $instance->public_id,
+            'to' => '5511888888888',
+            'text' => 'Olá do ZAP',
+        ], sendTextHeaders('job-fail'))
+        ->assertAccepted();
+
+    $message = Message::query()->first();
+    $job = new SendOutboundText((int) $message?->id);
+
+    try {
+        $job->handle(app(MessagingProvider::class), app(MarkOutboundMessageResult::class));
+    } catch (RuntimeException $exception) {
+        $job->failed($exception);
+    }
+
+    expect($message?->fresh()?->status)->toBe(MessageStatus::Failed);
+
+    Event::assertDispatched(MessageFailed::class, function (MessageFailed $event) use ($owner, $message): bool {
+        return $event->workspacePublicId === $owner->ownedWorkspace?->public_id
+            && $event->messagePublicId === $message?->public_id
+            && $event->status === 'failed';
+    });
 });
