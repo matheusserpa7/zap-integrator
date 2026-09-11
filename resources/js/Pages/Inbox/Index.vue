@@ -3,6 +3,7 @@ import { computed, ref, watch } from 'vue';
 import { Head, Link, usePoll } from '@inertiajs/vue3';
 import { Input } from '@/Components/ui/input';
 import { Badge } from '@/Components/ui/badge';
+import { useInboxRealtime } from '@/composables/useInboxRealtime';
 
 export type InboxContact = {
     public_id: string;
@@ -46,14 +47,18 @@ const { start, stop } = usePoll(
     { only: ['conversations', 'selected', 'messages'] },
     { autoStart: false },
 );
+const live = useInboxRealtime({ start, stop });
 
 watch(
     () => props.pollIntervalMs,
     () => {
+        if (live.value) {
+            return;
+        }
+
         stop();
         start();
     },
-    { immediate: true },
 );
 
 const filteredConversations = computed(() => {
@@ -130,6 +135,8 @@ function isActive(conversation: InboxConversation): boolean {
             </div>
             <span
                 class="inline-flex items-center gap-1.5 rounded-full bg-green-100 px-2.5 py-1.5 text-xs font-extrabold text-green-800"
+                data-testid="inbox-realtime"
+                :data-live="live ? 'true' : 'false'"
             >
                 Tempo real
             </span>

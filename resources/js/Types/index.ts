@@ -12,8 +12,16 @@ export type SharedWorkspace = {
     max_instances: number;
 };
 
+export type ReverbPublicConfig = {
+    key: string | null;
+    host: string | null;
+    port: number | null;
+    scheme: string;
+};
+
 export type SharedProps = {
     workspace: SharedWorkspace | null;
+    reverb: ReverbPublicConfig;
     auth: {
         user: AuthUser | null;
     };

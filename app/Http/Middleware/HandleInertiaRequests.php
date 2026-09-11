@@ -28,12 +28,23 @@ final class HandleInertiaRequests extends Middleware
         $user = $request->user();
         $workspace = $user instanceof User ? $user->currentWorkspace() : null;
 
+        $reverbKey = config('broadcasting.connections.reverb.key');
+        $reverbHost = config('broadcasting.connections.reverb.options.host');
+        $reverbPort = config('broadcasting.connections.reverb.options.port');
+        $reverbScheme = config('broadcasting.connections.reverb.options.scheme');
+
         return [
             ...parent::share($request),
             'workspace' => $workspace === null ? null : [
                 'public_id' => $workspace->public_id,
                 'name' => $workspace->name,
                 'max_instances' => $workspace->maxInstancesLimit(),
+            ],
+            'reverb' => [
+                'key' => is_string($reverbKey) && $reverbKey !== '' ? $reverbKey : null,
+                'host' => is_string($reverbHost) && $reverbHost !== '' ? $reverbHost : 'localhost',
+                'port' => is_numeric($reverbPort) ? (int) $reverbPort : 80,
+                'scheme' => is_string($reverbScheme) && $reverbScheme !== '' ? $reverbScheme : 'http',
             ],
             'auth' => [
                 'user' => $user instanceof User ? [
