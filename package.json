@@ -42,7 +42,7 @@
         "lucide-vue-next": "^0.544.0",
         "reka-ui": "^2.4.1",
         "tailwind-merge": "^3.3.1",
-        "vue": "^3.5.21"
+        "vue": "^3.5.43"
     },
     "optionalDependencies": {
         "@laravel/multiplex": "^0.4.1"
